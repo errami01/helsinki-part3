@@ -1,10 +1,21 @@
 const express = require('express')
+require('dotenv').config()
 const morgan = require('morgan')
+const mongoose = require('mongoose')
+
+
 const app = express()
 app.use(express.json())
 app.use(express.static('dist'))
 morgan.token('body', (req, res) => JSON.stringify(req.body));
 app.use(morgan(':method :url :status :req[content-length] - :response-time ms :body'))
+const url = process.env.MONGO_URI
+mongoose.connect(url)
+const personSchema = mongoose.Schema({
+  name : String,
+  number: String
+})
+const Person = mongoose.model('Person', personSchema)
 let persons =[
     { 
       "id": 1,
@@ -31,17 +42,25 @@ app.get('/', (request, response) => {
     response.send('<h1>Hello World!</h1>')
   })
 app.get('/api/persons', (request, response) => {
+  Person.find({}).then(persons=>{
+    console.log(persons)
     response.json(persons)
+  })
+    
 })
 app.get('/info', (request, response) => {
-    response.send(`<p>Phonebook has info for ${persons.length} people</p>
-    <p>${new Date()}</P>`)
+  Person
+    .find({})
+    .then(persons=>{
+      response.send(`<p>Phonebook has info for ${persons.length} people</p>
+      <p>${new Date()}</P>`)
+    })
 })
 app.get('/api/persons/:id',(req, res)=>{
-    const id = Number(req.params.id)
-    const person = persons.find((person)=> person.id === id)
-    if (person) res.json(person)
-    else res.status(404).end()
+  Person
+    .findById(req.params.id)
+    .then(person=>res.json(person))
+    .catch(()=>res.status(404).end())
 })
 app.delete('/api/persons/:id',(req, res)=>{
     const id = Number(req.params.id)
