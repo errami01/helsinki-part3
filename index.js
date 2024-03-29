@@ -6,12 +6,12 @@ const Person = require('./models/person')
 const app = express()
 app.use(express.json())
 app.use(express.static('dist'))
-morgan.token('body', (req, res) => JSON.stringify(req.body));
+morgan.token('body', (req, res) => JSON.stringify(req.body))
 app.use(morgan(':method :url :status :req[content-length] - :response-time ms :body'))
 
 app.get('/', (request, response) => {
-    response.send('<h1>Hello World!</h1>')
-  })
+  response.send('<h1>Hello World!</h1>')
+})
 app.get('/api/persons', (request, response) => {
   Person.find({}).then(persons=>{
     response.json(persons)
@@ -34,7 +34,7 @@ app.get('/api/persons/:id',(req, res, next)=>{
 })
 app.delete('/api/persons/:id', (request, response, next) => {
   Person.findByIdAndDelete(request.params.id)
-    .then(result => {
+    .then(() => {
       response.status(204).end()
     })
     .catch(error => next(error))
@@ -46,21 +46,21 @@ app.put('/api/persons/:id',(request, response, next)=>{
     number: body.number
   }
   Person.findByIdAndUpdate(request.params.id, person, { new: true ,runValidators: true, context: 'query' })
-      .then(updatedPerson => {
-        response.json(updatedPerson)
-      })
-      .catch(error => next(error))
+    .then(updatedPerson => {
+      response.json(updatedPerson)
+    })
+    .catch(error => next(error))
 })
 app.post('/api/persons', (req, res, next)=>{
-    const body = req.body
-    const person = new Person({
-        name: body.name,
-        number: body.number,
-    })
-    person
-      .save()
-      .then(savedPerson=>res.json(savedPerson))
-      .catch(error => next(error))
+  const body = req.body
+  const person = new Person({
+    name: body.name,
+    number: body.number,
+  })
+  person
+    .save()
+    .then(savedPerson=>res.json(savedPerson))
+    .catch(error => next(error))
     
 })
 const errorHandler = (error, request, response, next) => {
